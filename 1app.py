@@ -1,26 +1,27 @@
 import streamlit as st
 import pandas as pd
 from script import process_raw_to_template
+import io
 
 
 
 
-st.title("🧬 Raw to Template Harmonization🧬")
+st.title("🧬 Raw to Template Harmonization")
 
-st.subheader("Step 1: Upload Files")
+st.subheader("Upload Files")
 
 template_file = st.file_uploader("Upload Template File (.xlsx)", type="xlsx")
 raw_file = st.file_uploader("Upload Raw Clinical File (.xlsx)", type="xlsx")
 shipping_file = st.file_uploader("Upload Shipping Manifest (.xlsx)", type="xlsx")
 
-st.subheader("Step 2: Configuration")
+st.subheader("Configuration")
 
 sheet_name_raw = st.text_input("Sheet name for raw file", value="Clinical Data")
 sheet_name_shipping = st.text_input("Sheet name for shipping manifest", value="Template")
 
-raw_header = st.number_input("Header row index (raw file)", value=1, step=1)
-template_header = st.number_input("Header row index (template file)", value=1, step=1)
-shipping_header = st.number_input("Header row index (shipping manifest)", value=10, step=1)
+raw_header = st.number_input("What row is the header for the raw file?", value=1, step=1)
+template_header = st.number_input("What row is the header for the template file?", value=1, step=1)
+shipping_header = st.number_input("What row is the header for the shipping manifest?", value=10, step=1)
 
 
 dataset = st.text_input("Dataset name (used for output file name)", value="PRB_LB_0325")
@@ -33,7 +34,7 @@ biomarker_cols_text = st.text_area(
 biomarker_cols = [col.strip() for col in biomarker_cols_text.split(",") if col.strip()]
 
 
-st.subheader("Column Mapping (Template → Raw)")
+st.subheader("Column Mapping")
 template_fields = [
     "ExternalId", "TubeBarcode", "Stabilizer", "Single or Double Spun",
     "Hemolysis", "SpecimenType", "Date of Blood Draw/Cell Collection",
@@ -60,14 +61,35 @@ for field in fixed_fields:
 
 
 st.subheader("Calculation Columns")
-calc_1 = st.text_input("Start date column (e.g. Date of cancer diagnosis)", key="calc_start_1")
-calc_2 = st.text_input("End date column (e.g. Date of blood collection)", key="calc_end_1")
-calc_label = st.text_input("Label for this calculation", value="Duration between Cancer Diagnosis and Blood Draw (days)")
+
+# Predefined labels you want users to pick from
+label_options = [
+    "Duration between Cancer Diagnosis and Blood Draw (days)",
+    "Duration between TNM Staging and Blood Draw (days)",
+    "Duration between Metastatic Diagnosis and Blood Draw (days)",
+]
+
+# Number of calculation blocks to show
+num_calculations = st.number_input(
+    "How many time difference calculations?", min_value=0, max_value=10, step=1, value=1
+)
 
 calculation_functions = {}
-if calc_1 and calc_2 and calc_label:
-    calculation_functions[calc_label] = [calc_1, calc_2]
 
+for i in range(num_calculations):
+    st.markdown(f"**Calculation {i+1}**")
+    
+    start_col = st.text_input(f"Start date column for calculation {i+1}", key=f"calc_start_{i}")
+    end_col = st.text_input(f"End date column for calculation {i+1}", key=f"calc_end_{i}")
+    
+    label = st.selectbox(
+        f"Label for this calculation {i+1}",
+        label_options,
+        key=f"calc_label_{i}"
+    )
+
+    if start_col and end_col and label:
+        calculation_functions[label] = [start_col, end_col]
 
 extract_menopause_from_biomarker = st.checkbox(
     "Extract Menopausal Status from Biomarker Columns?", value=True
@@ -95,5 +117,18 @@ if st.button("Run Harmonization"):
 
     st.success("Done!")
     st.dataframe(final_df.head())
+
+    # Convert to Excel
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        final_df.to_excel(writer, index=False)
+    output.seek(0)
+
+    st.download_button(
+        label="📥 Download Harmonized Excel",
+        data=output,
+        file_name=f"{dataset}_formatted_auto.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 

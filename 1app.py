@@ -76,6 +76,7 @@ template_fields = [
 ]
 
 column_mapping = {}
+fixed_values = {}
 if all_column_options:
     for field in template_fields:
         st.markdown(f"### {field}")
@@ -85,8 +86,16 @@ if all_column_options:
 
         if use_not_received:
             column_mapping[field] = "not received"
+
         elif use_fixed_value:
-            column_mapping[field] = st.text_input(f"Enter constant value for '{field}':", key=f"fixed_value_{field}")
+            fixed_val = st.text_input(f"Enter constant value for '{field}':", key=f"fixed_value_{field}")
+
+            if fixed_val:
+                fixed_values[field] = fixed_val
+                column_mapping[field] = "fixed"
+            else:
+                column_mapping[field] = "not received"
+
         else:
             column_mapping[field] = st.selectbox(
                 f"Select the raw or shipping column to map to template field '{field}':",
@@ -95,18 +104,6 @@ if all_column_options:
             )
 else:
     st.info("Please upload and configure the raw file and/or shipping manifest to proceed with mapping.")
-
-# Fixed values section
-st.subheader("📌 Fixed Values")
-fixed_fields = [
-    "ContainerType", "Organism", "Project", "Data Transformer",
-    "Date of Transformation", "Condition", "Diagnostic Condition",
-    "RNA-Sequencing Available", "Source", "Country"
-]
-
-fixed_values = {}
-for field in fixed_fields:
-    fixed_values[field] = st.text_input(f"Value for '{field}'", key=f"fixed_{field}")
 
 # Calculation columns section
 st.subheader("🧮 Time Difference Calculations")
@@ -149,8 +146,8 @@ if st.button("Run Harmonization"):
         raw=raw,
         shipping_manifest=shipping,
         dataset=dataset,
-        transformer=fixed_values.get("Data Transformer", ""),
-        transform_date=fixed_values.get("Date of Transformation", ""),
+        transformer="",
+        transform_date="",
         column_mapping=column_mapping,
         fixed_values=fixed_values,
         biomarker_cols=[],

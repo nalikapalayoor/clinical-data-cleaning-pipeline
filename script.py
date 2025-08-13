@@ -405,6 +405,10 @@ def process_raw_to_template(
                 final[template_col] = raw[raw_col].apply(transformations[template_col])
             else:
                 final[template_col] = raw[raw_col]
+    
+    for col in template.columns:
+        if column_mapping.get(col) == "fixed" and col in fixed_values:
+            final[col] = fixed_values[col]
 
     # Fill required columns with "not received" if missing
     for col in final.columns:

@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from script import process_raw_to_template
+from harmonization import process_raw_to_template
+from harmonization import build_transformations
 import io
 
 st.title("Raw to Template Harmonization")
@@ -127,6 +128,31 @@ extract_menopause_from_biomarker = st.checkbox(
     "Extract Menopausal Status from Biomarker Columns?", value=True
 )
 
+import mysql.connector
+from harmonization import load_mapping  # or `from script import load_mapping` if you didn't rename
+
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="your_new_password",  # replace with your actual password
+    database="mappings_db"
+)
+
+biomarker_mapping = load_mapping(conn, "biomarker_mappings", std_col="standard_name")
+pos_neg_mapping = load_mapping(conn, "pos_neg_mappings")
+her2_ihc_mapping = load_mapping(conn, "her2_ihc_mappings")
+menopause_mapping = load_mapping(conn, "menopause_mappings", std_col="standard_term")
+
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="your_new_password",
+    database="mappings_db"
+)
+
+transformations = build_transformations(conn)
+
+
 # Harmonization trigger
 if st.button("Run Harmonization"):
     raw = pd.read_excel(raw_file, sheet_name=sheet_name_raw, header=raw_header)
@@ -144,8 +170,15 @@ if st.button("Run Harmonization"):
         fixed_values=fixed_values,
         biomarker_cols=[],
         calculation_functions=calculation_functions,
-        extract_menopause_from_biomarker=extract_menopause_from_biomarker
+        extract_menopause_from_biomarker=extract_menopause_from_biomarker,
+        biomarker_mapping=biomarker_mapping,
+        pos_neg_mapping=pos_neg_mapping,
+        her2_ihc_mapping=her2_ihc_mapping,
+        menopause_mapping=menopause_mapping,
+        transformations=transformations
+
     )
+    
 
     st.success("✅ Harmonization Complete!")
     st.dataframe(final_df.head())

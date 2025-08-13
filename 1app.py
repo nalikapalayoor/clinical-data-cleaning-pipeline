@@ -77,24 +77,40 @@ template_fields = [
 
 column_mapping = {}
 fixed_values = {}
+calculation_functions = {}
+
+# Define which fields can be calculated
+calculated_fields = [
+    "Duration between Cancer Diagnosis and Blood Draw (days)",
+    "Duration between TNM Staging and Blood Draw (days)",
+    "Duration between Metastatic Diagnosis and Blood Draw (days)"
+]
+
 if all_column_options:
     for field in template_fields:
         st.markdown(f"### {field}")
 
         use_not_received = st.checkbox(f"Mark '{field}' as Not Received", key=f"not_received_{field}")
         use_fixed_value = st.checkbox(f"Fill '{field}' with a constant value", key=f"use_fixed_value_{field}")
+        use_calculated = field in calculated_fields and st.checkbox(f"Calculate '{field}' from two columns", key=f"use_calculated_{field}")
 
         if use_not_received:
             column_mapping[field] = "not received"
 
         elif use_fixed_value:
             fixed_val = st.text_input(f"Enter constant value for '{field}':", key=f"fixed_value_{field}")
-
             if fixed_val:
                 fixed_values[field] = fixed_val
                 column_mapping[field] = "fixed"
             else:
                 column_mapping[field] = "not received"
+
+        elif use_calculated:
+            start_col = st.selectbox(f"Start column for '{field}'", options=all_column_options, key=f"calc_start_{field}")
+            end_col = st.selectbox(f"End column for '{field}'", options=all_column_options, key=f"calc_end_{field}")
+            if start_col and end_col:
+                calculation_functions[field] = [start_col, end_col]
+                column_mapping[field] = "calculated"
 
         else:
             column_mapping[field] = st.selectbox(
@@ -105,30 +121,6 @@ if all_column_options:
 else:
     st.info("Please upload and configure the raw file and/or shipping manifest to proceed with mapping.")
 
-# Calculation columns section
-st.subheader("🧮 Time Difference Calculations")
-label_options = [
-    "Duration between Cancer Diagnosis and Blood Draw (days)",
-    "Duration between TNM Staging and Blood Draw (days)",
-    "Duration between Metastatic Diagnosis and Blood Draw (days)"
-]
-
-num_calculations = st.number_input(
-    "How many time difference calculations?", min_value=0, max_value=10, step=1, value=1
-)
-
-calculation_functions = {}
-for i in range(num_calculations):
-    st.markdown(f"**Calculation {i+1}**")
-    start_col = st.text_input(f"Start date column for calculation {i+1}", key=f"calc_start_{i}")
-    end_col = st.text_input(f"End date column for calculation {i+1}", key=f"calc_end_{i}")
-    label = st.selectbox(
-        f"Label for this calculation {i+1}",
-        label_options,
-        key=f"calc_label_{i}"
-    )
-    if start_col and end_col and label:
-        calculation_functions[label] = [start_col, end_col]
 
 # Menopause extraction checkbox
 extract_menopause_from_biomarker = st.checkbox(

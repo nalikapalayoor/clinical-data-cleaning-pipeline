@@ -48,21 +48,51 @@ if shipping_file and sheet_name_shipping:
 # Guided Column Mapping
 st.subheader("🧩 Guided Column Mapping")
 template_fields = [
-    "ExternalId", "TubeBarcode", "Stabilizer", "Single or Double Spun",
-    "Hemolysis", "SpecimenType", "Date of Blood Draw/Cell Collection",
-    "Time of Draw", "Gender", "Height", "Sample Timepoint", "TNM",
-    "Stage", "Morphology Code", "Description of Morphology Code",
-    "ExPatientId", "ExSpecimenId", "Weight"
+    "ExternalId", "Received Date", "ContainerType", "Volume_uL", "TubeBarcode",
+    "Concentration", "ConcentrationUnits", "Organism", "Stabilizer", "Single or Double Spun",
+    "Processing Method", "Processing Time(hrs)", "Freeze Thaw Status", "Hemolysis", "Project",
+    "Matched FFPE Available", "Date of Blood Draw/Cell Collection", "Time of Draw", "Block Size",
+    "Tissue Size", "Tissue Weight (mg)", "% Tumor", "% Necrosis", "Surgery Type",
+    "Tumor Tissue Type", "Data Transformer", "Date of Transformation", "Other Sample Notes",
+    "ExSpecimenId", "Collection Site", "SpecimenType", "Condition", "Diagnostic Condition",
+    "Histology", "Height", "Weight", "BMI",
+    "Duration between Cancer Diagnosis and Blood Draw (days)",
+    "Duration between Metastatic Diagnosis and Blood Draw (days)",
+    "Sample Timepoint", "Sample Timepoint Description", "AgeAtCollection",
+    "Detailed Anatomical Location", "Grade", "Tumor Size", "TNM",
+    "Duration between TNM Staging and Blood Draw (days)", "Stage", "Stage Detailed",
+    "Morphology Code", "Description of Morphology Code", "Metastatic Sites",
+    "Vehicle Control", "Media Conditions", "Additional Supplements to Media",
+    "Protocols for Harvesting Cell Lines", "Blood collection date (days from birth)",
+    "Number of lines of metastatic therapy at time of blood draw",
+    "Number of lines of chemotherapy at time of blood draw",
+    "Number of lines of anti-HER2 therapy at time of blood draw",
+    "Number of lines of endocrine therapy at time of blood draw", "Overall Survival(months)",
+    "Treatment Data", "Progression Free Survival(months)", "Gestational Age at Collection",
+    "Fetus Sex", "Menopausal Status", "Blood Type", "RNA-Sequencing Available",
+    "ExPatientId", "Source", "Country", "Gender", "Race", "MedicalHistory",
+    "FamilyHistory", "AlcoholHistory", "SmokingHistory", "Number of years smoked or smoking",
+    "Smoking Notes", "Donor Notes"
 ]
 
 column_mapping = {}
 if all_column_options:
     for field in template_fields:
-        column_mapping[field] = st.selectbox(
-            f"Select the raw or shipping column to map to template field '{field}':",
-            options=all_column_options,
-            key=f"map_{field}"
-        )
+        st.markdown(f"### {field}")
+
+        use_not_received = st.checkbox(f"Mark '{field}' as Not Received", key=f"not_received_{field}")
+        use_fixed_value = st.checkbox(f"Fill '{field}' with a constant value", key=f"use_fixed_value_{field}")
+
+        if use_not_received:
+            column_mapping[field] = "not received"
+        elif use_fixed_value:
+            column_mapping[field] = st.text_input(f"Enter constant value for '{field}':", key=f"fixed_value_{field}")
+        else:
+            column_mapping[field] = st.selectbox(
+                f"Select the raw or shipping column to map to template field '{field}':",
+                options=all_column_options,
+                key=f"map_{field}"
+            )
 else:
     st.info("Please upload and configure the raw file and/or shipping manifest to proceed with mapping.")
 

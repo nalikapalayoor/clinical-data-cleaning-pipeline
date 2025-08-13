@@ -210,21 +210,21 @@ with tab2:
     )
 
     mapping_tables = {
-    "Biomarkers": "biomarker_mappings",
-    "Positive/Negative Values": "pos_neg_mappings",
-    "HER2 IHC Scores": "her2_ihc_mappings",
-    "Menopause Status": "menopause_mappings",
-    "Stabilizers": "stabilizer_mappings",
-    "Gender": "gender_mappings",
-    "Single/Double Spun": "single_double_mappings",
-    "Sample Timepoints": "sample_timepoint_mappings",
-    "Stage": "stage_mappings",
-    "Hemolysis": "hemolysis_mappings"
-}
+    "Biomarkers": ("biomarker_mappings", "standard_name"),
+    "Positive/Negative Values": ("pos_neg_mappings", "standard_value"),
+    "HER2 IHC Scores": ("her2_ihc_mappings", "standard_value"),
+    "Menopause Status": ("menopause_mappings", "standard_term"),
+    "Stabilizers": ("stabilizer_mappings", "standard_value"),
+    "Gender": ("gender_mappings", "standard_value"),
+    "Single/Double Spun": ("single_double_mappings", "standard_value"),
+    "Sample Timepoints": ("sample_timepoint_mappings", "standard_value"),
+    "Stage": ("stage_mappings", "standard_value"),
+    "Hemolysis": ("hemolysis_mappings", "standard_value")
+    }
 
 
     table_display_name = st.selectbox("Select mapping table to view/edit:", list(mapping_tables.keys()))
-    table_name = mapping_tables[table_display_name]
+    table_name, standard_col = mapping_tables[table_display_name]
 
     st.subheader(f"Existing Mappings in {table_display_name}")
     mapping_df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
@@ -239,9 +239,9 @@ with tab2:
         if new_standard and new_synonym:
             cursor = conn.cursor()
             cursor.execute(
-                f"INSERT INTO {table_name} (standard_name, synonym) VALUES (%s, %s)",
+                f"INSERT INTO {table_name} ({standard_col}, synonym) VALUES (%s, %s)",
                 (new_standard.strip(), new_synonym.strip())
-            )
+        )
             conn.commit()
             st.success("✅ Synonym added!")
         else:

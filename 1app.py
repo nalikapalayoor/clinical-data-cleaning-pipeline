@@ -115,7 +115,7 @@ if all_column_options:
         else:
             column_mapping[field] = st.selectbox(
                 f"Select the raw or shipping column to map to template field '{field}':",
-                options=all_column_options,
+                options=[""] + all_column_options,
                 key=f"map_{field}"
             )
 else:

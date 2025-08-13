@@ -3,7 +3,7 @@ import pandas as pd
 from script import process_raw_to_template
 import io
 
-st.title("🧬 Raw to Template Harmonization")
+st.title("Raw to Template Harmonization")
 
 st.subheader("Upload Files")
 
@@ -30,7 +30,7 @@ all_column_options = []
 if raw_file and sheet_name_raw:
     try:
         raw_preview = pd.read_excel(raw_file, sheet_name=sheet_name_raw, header=raw_header)
-        st.subheader("🔍 Raw File Preview")
+        st.subheader("Raw File Preview")
         st.dataframe(raw_preview.head(5))
         all_column_options.extend(raw_preview.columns.tolist())
     except Exception as e:
@@ -39,14 +39,14 @@ if raw_file and sheet_name_raw:
 if shipping_file and sheet_name_shipping:
     try:
         shipping_preview = pd.read_excel(shipping_file, sheet_name=sheet_name_shipping, header=shipping_header)
-        st.subheader("📦 Shipping Manifest Preview")
+        st.subheader("Shipping Manifest Preview")
         st.dataframe(shipping_preview.head(5))
         all_column_options.extend(shipping_preview.columns.tolist())
     except Exception as e:
         st.warning(f"Could not preview shipping manifest: {e}")
 
 # Guided Column Mapping
-st.subheader("🧩 Guided Column Mapping")
+st.subheader("Guided Column Mapping")
 template_fields = [
     "ExternalId", "Received Date", "ContainerType", "Volume_uL", "TubeBarcode",
     "Concentration", "ConcentrationUnits", "Organism", "Stabilizer", "Single or Double Spun",

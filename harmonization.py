@@ -231,29 +231,6 @@ if __name__ == "__main__":
         database='mappings_db'
     )
 
-    clean_stabilizer = make_cleaner(load_mapping(conn, "stabilizer_mappings"))
-    clean_gender = make_cleaner(load_mapping(conn, "gender_mappings"))
-    clean_single_double = make_cleaner(load_mapping(conn, "single_double_mappings"))
-    clean_sample_timepoint = make_cleaner(load_mapping(conn, "sample_timepoint_mappings"))
-    clean_stage = make_cleaner(load_mapping(conn, "stage_mappings"))
-    clean_hemolysis = make_cleaner(load_mapping(conn, "hemolysis_mappings"))
-
-    transformations = {
-        "Date of Blood Draw/Cell Collection": clean_date,
-        "Time of Draw": clean_time,
-        "Stabilizer": clean_stabilizer,
-        "Gender": clean_gender,
-        "Single or Double Spun": clean_single_double,
-        "Sample Timepoint": clean_sample_timepoint,
-        "Stage": clean_stage,
-        "Hemolysis": clean_hemolysis
-    }
-    conn = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='your_password',
-        database='mappings_db'
-    )
     menopause_mapping = load_mapping(conn, "menopause_mappings", std_col="standard_term")
     biomarker_mapping = load_mapping(conn, "biomarker_mappings", std_col="standard_name")
     pos_neg_mapping = load_mapping(conn, "pos_neg_mappings")

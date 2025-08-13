@@ -228,6 +228,7 @@ with tab2:
 
     st.subheader(f"Existing Mappings in {table_display_name}")
     mapping_df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+    mapping_df = mapping_df.drop(columns=["id"])
     st.dataframe(mapping_df)
 
     st.markdown("### ➕ Add a new synonym")

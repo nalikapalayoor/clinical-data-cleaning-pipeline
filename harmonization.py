@@ -1,3 +1,4 @@
+import streamlit as st
 import pandas as pd
 import re
 from datetime import datetime
@@ -101,6 +102,35 @@ def calculate_bmi(weight, height):
         return round(bmi, 2)
     except:
         return pd.NA
+    
+def parse_age_smart(val, collection_date):
+    try:
+        val_str = str(val).strip()
+        if not val_str or pd.isna(val):
+            return pd.NA
+        numeric_val = pd.to_numeric(val_str, errors="coerce")
+
+        if not pd.isna(numeric_val):
+            if 1000 <= numeric_val <= 2100:
+                collection_dt = pd.to_datetime(collection_date, errors="coerce")
+                if not pd.isna(collection_dt):
+                    return int(collection_dt.year - numeric_val)
+                else:
+                    return pd.NA
+            if 0 <= numeric_val <= 120:
+                return int(numeric_val)
+        
+        birth_date = pd.to_datetime(val_str, errors="coerce")
+        collection_dt = pd.to_datetime(collection_date, errors="coerce")
+        if not pd.isna(birth_date) and not pd.isna(collection_dt):
+            return int((collection_dt - birth_date).days // 365)
+
+    except:
+        pass
+
+    return pd.NA
+
+
 
 def extract_biomarkers_from_blob(blob, biomarker_lookup, pos_neg_mapping, her2_ihc_mapping):
     results = {}
@@ -177,14 +207,29 @@ def process_raw_to_template(template, raw, shipping_manifest, dataset, transform
     if extract_menopause_from_biomarker:
         final['Menopausal Status'] = raw['biomarker_blob'].apply(lambda val: extract_menopause_status(val, menopause_mapping))
     call_calculation_functions(final, raw, calculation_functions)
+
+    age_col = column_mapping.get("AgeAtCollection")
+    collection_col = column_mapping.get("Date of Blood Draw/Cell Collection")
+
     final["AgeAtCollection"] = raw.apply(
-        lambda row: calculate_age(row.get("Year of birth"), row.get("Date of blood collection [yyyy-mm-dd]")), axis=1)
+        lambda row: parse_age_smart(
+            row.get(age_col) if age_col else None,
+            row.get(collection_col) if collection_col else None
+        ),
+        axis=1
+    )
+
+    special_fields = {"AgeAtCollection"}
+    
     final["BMI"] = raw.apply(
         lambda row: calculate_bmi(row.get("Maximum weight [kg] "), row.get("Body height [cm]")), axis=1)
+    
     for col, val in fixed_values.items():
         if col in final.columns:
             final[col] = val
     for template_col in column_mapping:
+        if template_col in special_fields:
+            continue
         raw_col = column_mapping[template_col]
         if raw_col in raw.columns:
             if template_col in transformations:

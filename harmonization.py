@@ -221,8 +221,16 @@ def process_raw_to_template(template, raw, shipping_manifest, dataset, transform
 
     special_fields = {"AgeAtCollection"}
     
-    final["BMI"] = raw.apply(
-        lambda row: calculate_bmi(row.get("Maximum weight [kg] "), row.get("Body height [cm]")), axis=1)
+    weight_col = column_mapping.get("Weight")
+    height_col = column_mapping.get("Height")
+
+    if weight_col in raw.columns and height_col in raw.columns:
+        final["BMI"] = raw.apply(
+            lambda row: calculate_bmi(row.get(weight_col), row.get(height_col)), axis=1
+        )
+    else:
+        final["BMI"] = pd.NA
+
     
     for col, val in fixed_values.items():
         if col in final.columns:
@@ -295,4 +303,3 @@ if __name__ == "__main__":
     clean_sample_timepoint = make_cleaner(sample_timepoint_mapping)
     clean_pos_neg = make_cleaner(pos_neg_mapping)
     clean_her2_ihc = make_cleaner(her2_ihc_mapping)
-    

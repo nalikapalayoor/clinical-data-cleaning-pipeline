@@ -15,14 +15,12 @@ with tab1:
     template_file = st.file_uploader("Upload Template File (.xlsx)", type="xlsx")
     raw_file = st.file_uploader("Upload Raw Clinical File (.xlsx)", type="xlsx")
     shipping_file = st.file_uploader("Upload Shipping Manifest (.xlsx)", type="xlsx")
-
+    st.markdown("<hr style='border: 1.5px solid black;'>", unsafe_allow_html=True)
     st.subheader("Configuration")
     sheet_name_raw = st.text_input("Sheet name for raw file", value="Clinical Data")
-    sheet_name_template = st.text_input("Sheet name for template file", value=None)
     sheet_name_shipping = st.text_input("Sheet name for shipping manifest", value="Template")
 
     raw_header = st.number_input("Header row for raw file (0-indexed)", value=1, step=1)
-    template_header = st.number_input("Header row for template file (0-indexed)", value=1, step=1)
     shipping_header = st.number_input("Header row for shipping manifest (0-indexed)", value=10, step=1)
 
     dataset = st.text_input("Dataset name (used for output file name)", value="PRB_LB_0325")
@@ -48,6 +46,8 @@ with tab1:
             all_column_options.extend(shipping_preview.columns.tolist())
         except Exception as e:
             st.sidebar.warning(f"Could not preview shipping manifest: {e}")
+
+    st.markdown("<hr style='border: 1.5px solid black;'>", unsafe_allow_html=True)
 
     # Guided Column Mapping
     st.subheader("Guided Column Mapping")
@@ -150,8 +150,7 @@ with tab1:
         mapped_fields = 0
         total_fields = len(template_fields)
 
-        # Create placeholder for progress bar
-        st.sidebar.markdown("### 📝 Mapping Progress")
+        st.sidebar.markdown("### Mapping Progress")
         progress_bar = st.sidebar.progress(0)
 
         review_comments= {}
@@ -160,7 +159,7 @@ with tab1:
             st.markdown(f"### {field}")
 
             if meta["definition"]:
-                st.caption(f"📘 {meta['definition']}")
+                st.caption(f"{meta['definition']}")
 
             if meta["allowed"]:
                 st.markdown(f"**Allowed values**: `{meta['allowed']}`")
@@ -204,6 +203,7 @@ with tab1:
             if mapped_val not in ["", None]:
                 mapped_fields += 1
 
+
             progress_pct = int((mapped_fields / total_fields) * 100)
             progress_bar.progress(progress_pct)
 
@@ -243,10 +243,10 @@ with tab1:
     transformations = build_transformations(conn)
 
 
-    # Harmonization trigger
+    #run the harmonization process
     if st.button("Run Harmonization"):
         raw = pd.read_excel(raw_file, sheet_name=sheet_name_raw, header=raw_header)
-        template = pd.read_excel(template_file, header=template_header)
+        template = pd.read_excel(template_file, header=1)
         shipping = pd.read_excel(shipping_file, sheet_name=sheet_name_shipping, header=shipping_header) if shipping_file else pd.DataFrame()
 
         final_df = process_raw_to_template(
@@ -335,17 +335,13 @@ with tab2:
 
     st.markdown("### Add a new synonym")
 
-    # Fetch existing standard values from the DB
     existing_standards_df = pd.read_sql(f"SELECT DISTINCT {standard_col} FROM {table_name}", conn)
     standard_options = sorted(existing_standards_df[standard_col].dropna().unique().tolist())
 
-    # Add an extra option to create a new one
     standard_options.append("➕ Create new...")
 
-    # Dropdown with extra option
     selected_option = st.selectbox("Select or create a standard value", options=standard_options)
 
-    # If they choose "create new", show a text input
     if selected_option == "➕ Create new...":
         new_standard = st.text_input("Enter new standard value")
     else:

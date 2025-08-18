@@ -72,12 +72,12 @@ with tab1:
         "Time of Draw":{"allowed":"","definition":"Must be in format HH:MM (e.g. 14:30)"},
         "Block Size":{"allowed":"","definition":""},
         "Tissue Size":{"allowed":"","definition":""},
-        "Tissue Weight (mg)":{"allowed":"","definition":""},
-        "% Tumor":{"allowed":"","definition":""},
-        "% Necrosis":{"allowed":"","definition":""},
+        "Tissue Weight (mg)":{"allowed":"","definition":"(Decimal value)"},
+        "% Tumor":{"allowed":"","definition":"(Decimal value)"},
+        "% Necrosis":{"allowed":"","definition":"(Decimal value)"},
         "Surgery Type":{"allowed":"biopsy, resection","definition":""},
         "Tumor Tissue Type":{"allowed":"primary, metastasis","definition":""},
-        "Data Transformer":{"allowed":"","definition":"Your name"},
+        "Data Transformer":{"allowed":"","definition":"Name of person transforming the data"},
         "Date of Transformation":{"allowed":"","definition":"Must be in format XX-MON-YYYY (e.g. 01-JAN-2023)"},
         "Other Sample Notes":{"allowed":"","definition":""},
         "ExSpecimenId":{"allowed":"","definition":""},
@@ -90,8 +90,8 @@ with tab1:
         "Weight":{"allowed":"","definition":""},
         "Duration between Cancer Diagnosis and Blood Draw (days)":{"allowed":"","definition":""},
         "Duration between Metastatic Diagnosis and Blood Draw (days)":{"allowed":"","definition":""},
-        "Sample Timepoint":{"allowed":"","definition":""},
-        "Sample Timepoint Description":{"allowed":"treatment-naïve, undergoing treatment, progression, study termination","definition":""},
+        "Sample Timepoint":{"allowed":"treatment-naïve, undergoing treatment, progression, study termination","definition":""},
+        "Sample Timepoint Description":{"allowed":"","definition":"Use this field if the sample timepoint is not one of the standard options above."},
         "AgeAtCollection":{"allowed":"","definition":""},
         "Detailed Anatomical Location":{"allowed":"","definition":""},
         "Grade":{"allowed":"","definition":""},
@@ -115,8 +115,8 @@ with tab1:
         "Overall Survival(months)":{"allowed":"","definition":""},
         "Treatment Data":{"allowed":"","definition":""},
         "Progression Free Survival(months)":{"allowed":"","definition":""},
-        "Gestational Age at Collection":{"allowed":"","definition":""},
-        "Fetus Sex":{"allowed":"","definition":""},
+        "Gestational Age at Collection":{"allowed":"","definition":"Only needed for pregnancy samples"},
+        "Fetus Sex":{"allowed":"Male, Female, Unknown","definition":"Only needed for pregnancy samples"},
         "Menopausal Status":{"allowed":"premenopause, perimenopause, menopause, postmenopause","definition":""},
         "Blood Type":{"allowed":"","definition":""},
         "RNA-Sequencing Available":{"allowed":"Yes, No","definition":""},
@@ -338,11 +338,11 @@ with tab2:
     existing_standards_df = pd.read_sql(f"SELECT DISTINCT {standard_col} FROM {table_name}", conn)
     standard_options = sorted(existing_standards_df[standard_col].dropna().unique().tolist())
 
-    standard_options.append("➕ Create new...")
+    standard_options.append("➕ Create new")
 
     selected_option = st.selectbox("Select or create a standard value", options=standard_options)
 
-    if selected_option == "➕ Create new...":
+    if selected_option == "➕ Create new":
         new_standard = st.text_input("Enter new standard value")
     else:
         new_standard = selected_option
@@ -358,6 +358,6 @@ with tab2:
                 (new_standard.strip(), new_synonym.strip())
         )
             conn.commit()
-            st.success("✅ Synonym added!")
+            st.success("Synonym added ✅")
         else:
             st.warning("Please fill out both fields to add a new synonym.")

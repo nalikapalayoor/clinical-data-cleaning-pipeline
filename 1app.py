@@ -154,6 +154,8 @@ with tab1:
         st.sidebar.markdown("### 📝 Mapping Progress")
         progress_bar = st.sidebar.progress(0)
 
+        review_comments= {}
+
         for field,meta in template_fields.items():
             st.markdown(f"### {field}")
 
@@ -187,10 +189,16 @@ with tab1:
 
             else:
                 column_mapping[field] = st.selectbox(
-                    f"Select the raw or shipping column to map to template field '{field}':",
+                    f"Select the column to map to template field '{field}':",
                     options=[""] + all_column_options,
                     key=f"map_{field}"
                 )
+
+            flag_for_review = st.checkbox(f"Flag '{field}' for review", key=f"flag_review_{field}")
+            if flag_for_review:
+                comment = st.text_input(f"Optional comment for '{field}'", key=f"comment_{field}")
+                if comment:
+                    review_comments[field] = comment
 
             mapped_val = column_mapping.get(field)
             if mapped_val not in ["", None]:
@@ -198,6 +206,8 @@ with tab1:
 
             progress_pct = int((mapped_fields / total_fields) * 100)
             progress_bar.progress(progress_pct)
+
+            st.markdown("---")
 
     else:
         st.info("Please upload and configure the raw file and/or shipping manifest to proceed with mapping.")
@@ -209,12 +219,12 @@ with tab1:
     )
 
     import mysql.connector
-    from harmonization import load_mapping  # or `from script import load_mapping` if you didn't rename
+    from harmonization import load_mapping
 
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="your_new_password",  # replace with your actual password
+        password="your_new_password",
         database="mappings_db"
     )
 
@@ -264,9 +274,22 @@ with tab1:
         st.dataframe(final_df.head())
 
         output = io.BytesIO()
+
+
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             final_df.to_excel(writer, index=False)
+
+            workbook  = writer.book
+            worksheet = writer.sheets['Sheet1']
+            highlight_format = workbook.add_format({'bg_color': '#FFF2CC'})
+
+            for col_idx, col_name in enumerate(final_df.columns):
+                if col_name in review_comments:
+                    worksheet.set_column(col_idx, col_idx, None, highlight_format)
+                    worksheet.write_comment(0, col_idx, review_comments[col_name])
+
         output.seek(0)
+
 
         st.download_button(
             label="📥 Download Harmonized Excel",

@@ -198,7 +198,7 @@ def call_calculation_functions(final_df, raw_df, mapping_dict):
 def process_raw_to_template(template, raw, shipping_manifest, dataset, transformer, transform_date, column_mapping, fixed_values, biomarker_cols, calculation_functions, biomarker_mapping, pos_neg_mapping, her2_ihc_mapping, menopause_mapping, extract_menopause_from_biomarker=True, transformations=None):
     final = pd.DataFrame(index=raw.index, columns=template.columns)
     raw['biomarker_blob'] = raw[biomarker_cols].astype(str).replace('nan', '').agg(' '.join, axis=1).str.replace(r'\s+', ' ', regex=True).str.strip()
-    raw = pd.merge(raw, shipping_manifest, left_on='Patient ID\nconsecutive', right_on='Patient ID consecutive', how="left")
+    #raw = pd.merge(raw, shipping_manifest, left_on='Patient ID\nconsecutive', right_on='Patient ID consecutive', how="left")
     biomarker_data = raw['biomarker_blob'].apply(
         lambda row: extract_biomarkers_from_blob(row, biomarker_mapping, pos_neg_mapping, her2_ihc_mapping)).to_dict()
     for idx, result in biomarker_data.items():

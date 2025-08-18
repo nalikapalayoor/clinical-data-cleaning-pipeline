@@ -35,50 +35,104 @@ with tab1:
     if raw_file and sheet_name_raw:
         try:
             raw_preview = pd.read_excel(raw_file, sheet_name=sheet_name_raw, header=raw_header)
-            st.subheader("Raw File Preview")
-            st.dataframe(raw_preview.head(5))
+            with st.sidebar.expander("Raw File Preview", expanded=True):
+                st.dataframe(raw_preview.head(5).reset_index(drop=True), height=200, hide_index=True)
             all_column_options.extend(raw_preview.columns.tolist())
         except Exception as e:
-            st.warning(f"Could not preview raw file: {e}")
-
+            st.sidebar.warning(f"Could not preview raw file: {e}")
     if shipping_file and sheet_name_shipping:
         try:
             shipping_preview = pd.read_excel(shipping_file, sheet_name=sheet_name_shipping, header=shipping_header)
-            st.subheader("Shipping Manifest Preview")
-            st.dataframe(shipping_preview.head(5))
+            with st.sidebar.expander("Shipping Manifest Preview", expanded=True):
+                st.dataframe(shipping_preview.head(5).reset_index(drop=True), height=200, hide_index=True)
             all_column_options.extend(shipping_preview.columns.tolist())
         except Exception as e:
-            st.warning(f"Could not preview shipping manifest: {e}")
+            st.sidebar.warning(f"Could not preview shipping manifest: {e}")
 
     # Guided Column Mapping
     st.subheader("Guided Column Mapping")
-    template_fields = [
-        "ExternalId", "Received Date", "ContainerType", "Volume_uL", "TubeBarcode",
-        "Concentration", "ConcentrationUnits", "Organism", "Stabilizer", "Single or Double Spun",
-        "Processing Method", "Processing Time(hrs)", "Freeze Thaw Status", "Hemolysis", "Project",
-        "Matched FFPE Available", "Date of Blood Draw/Cell Collection", "Time of Draw", "Block Size",
-        "Tissue Size", "Tissue Weight (mg)", "% Tumor", "% Necrosis", "Surgery Type",
-        "Tumor Tissue Type", "Data Transformer", "Date of Transformation", "Other Sample Notes",
-        "ExSpecimenId", "Collection Site", "SpecimenType", "Condition", "Diagnostic Condition",
-        "Histology", "Height", "Weight", "BMI",
-        "Duration between Cancer Diagnosis and Blood Draw (days)",
-        "Duration between Metastatic Diagnosis and Blood Draw (days)",
-        "Sample Timepoint", "Sample Timepoint Description", "AgeAtCollection",
-        "Detailed Anatomical Location", "Grade", "Tumor Size", "TNM",
-        "Duration between TNM Staging and Blood Draw (days)", "Stage", "Stage Detailed",
-        "Morphology Code", "Description of Morphology Code", "Metastatic Sites",
-        "Vehicle Control", "Media Conditions", "Additional Supplements to Media",
-        "Protocols for Harvesting Cell Lines", "Blood collection date (days from birth)",
-        "Number of lines of metastatic therapy at time of blood draw",
-        "Number of lines of chemotherapy at time of blood draw",
-        "Number of lines of anti-HER2 therapy at time of blood draw",
-        "Number of lines of endocrine therapy at time of blood draw", "Overall Survival(months)",
-        "Treatment Data", "Progression Free Survival(months)", "Gestational Age at Collection",
-        "Fetus Sex", "Menopausal Status", "Blood Type", "RNA-Sequencing Available",
-        "ExPatientId", "Source", "Country", "Gender", "Race", "MedicalHistory",
-        "FamilyHistory", "AlcoholHistory", "SmokingHistory", "Number of years smoked or smoking",
-        "Smoking Notes", "Donor Notes"
-    ]
+    template_fields = {
+        "ExternalId":{"allowed":"","definition":"Sample ID received from site"},
+        "Received Date":{"allowed":"","definition":"Must be in format XX-MON-YYYY (e.g. 01-JAN-2023)"},
+        "ContainerType":{"allowed":"Slide, Tube, Plate, FFPE Block","definition":""},
+        "Volume_uL":{"allowed":"","definition":""},
+        "TubeBarcode":{"allowed":"","definition":""},
+        "Concentration":{"allowed":"","definition":""},
+        "ConcentrationUnits":{"allowed":"","definition":""},
+        "Organism":{"allowed":"Human, Mouse, Mouse PDX","definition":""},
+        "Stabilizer":{"allowed":"Streck, Accucyte, EDTA, PAXgene ccfDNA","definition":""},
+        "Single or Double Spun":{"allowed":"Single, Double","definition":""},
+        "Processing Method":{"allowed":"","definition":""},
+        "Processing Time(hrs)":{"allowed":"","definition":""},
+        "Freeze Thaw Status":{"allowed":"0,1,2,3,4,4, Unknown","definition":"Number of freeze-thaw cycles the sample has undergone."},
+        "Hemolysis":{"allowed":"no hemolysis, light hemolysis, strong hemolysis, hemolysis","definition":"Documentation for quality of plasma (leave blank for non-plasma samples)"},
+        "Project":{"allowed":"","definition":""},
+        "Matched FFPE Available":{"allowed":"Yes, No","definition":"Add for plasma samples (not for FFPE samples themselves)"},
+        "Date of Blood Draw/Cell Collection":{"allowed":"","definition":"Must be in format XX-MON-YYYY (e.g. 01-JAN-2023)"},
+        "Time of Draw":{"allowed":"","definition":"Must be in format HH:MM (e.g. 14:30)"},
+        "Block Size":{"allowed":"","definition":""},
+        "Tissue Size":{"allowed":"","definition":""},
+        "Tissue Weight (mg)":{"allowed":"","definition":""},
+        "% Tumor":{"allowed":"","definition":""},
+        "% Necrosis":{"allowed":"","definition":""},
+        "Surgery Type":{"allowed":"biopsy, resection","definition":""},
+        "Tumor Tissue Type":{"allowed":"primary, metastasis","definition":""},
+        "Data Transformer":{"allowed":"","definition":"Your name"},
+        "Date of Transformation":{"allowed":"","definition":"Must be in format XX-MON-YYYY (e.g. 01-JAN-2023)"},
+        "Other Sample Notes":{"allowed":"","definition":""},
+        "ExSpecimenId":{"allowed":"","definition":""},
+        "Collection Site":{"allowed":"","definition":""},
+        "SpecimenType":{"allowed":"Cell Line, Blood","definition":""},
+        "Condition":{"allowed":"cancer, autoimmune, pregnancy, healthy","definition":""},
+        "Diagnostic Condition":{"allowed":"breast cancer, colorectal cancer, lung cancer, gastroesophageal cancer, multiple sclerosis, osteosarcoma, ovarian cancer","definition":""},
+        "Histology":{"allowed":"adenocarcinoma, carcinoma, epithelial tumor, endometrioid carcinoma, mucinous adenocarcinoma, infiltrating ductal carcinoma, infiltrating lobular carcinoma, large cell neuroendocrine carcinoma, large cell carcinoma, lobular carcinoma in situ, ductal carcinoma in situ, non-small cell lung cancer NOS, phylloides tumor, secretory carcinoma, small cell carcinoma, squamous cell carcinoma, signet ring cell carcinoma, neuroendocrine carcinoma, NOS, metastatic castration-resistant prostate cancer (mCRPC), invasive carcinoma NOS, acinar adenocarcinoma, pleomorphic carcinoma, lepidic adenocarcinoma, papillary adenocarcinoma,metaplastic carcinoma, serous carcinoma, not applicable, not received, SPMS, RRMS, PPMS,","definition":""},
+        "Height":{"allowed":"","definition":""},
+        "Weight":{"allowed":"","definition":""},
+        "Duration between Cancer Diagnosis and Blood Draw (days)":{"allowed":"","definition":""},
+        "Duration between Metastatic Diagnosis and Blood Draw (days)":{"allowed":"","definition":""},
+        "Sample Timepoint":{"allowed":"","definition":""},
+        "Sample Timepoint Description":{"allowed":"treatment-naïve, undergoing treatment, progression, study termination","definition":""},
+        "AgeAtCollection":{"allowed":"","definition":""},
+        "Detailed Anatomical Location":{"allowed":"","definition":""},
+        "Grade":{"allowed":"","definition":""},
+        "Tumor Size":{"allowed":"","definition":""},
+        "TNM":{"allowed":"","definition":""},
+        "Duration between TNM Staging and Blood Draw (days)":{"allowed":"","definition":""},
+        "Stage":{"allowed":" I, II, III, IV","definition":""},
+        "Stage Detailed":{"allowed":"","definition":""},
+        "Morphology Code":{"allowed":"","definition":""},
+        "Description of Morphology Code":{"allowed":"","definition":""},
+        "Metastatic Sites":{"allowed":"","definition":"Organs the cancer has metastasized to, e.g. liver, lung, bone, brain"},
+        "Vehicle Control":{"allowed":"","definition":""},
+        "Media Conditions":{"allowed":"","definition":""},
+        "Additional Supplements to Media":{"allowed":"","definition":""},
+        "Protocols for Harvesting Cell Lines":{"allowed":"","definition":""},
+        "Blood collection date (days from birth)":{"allowed":"","definition":""},
+        "Number of lines of metastatic therapy at time of blood draw":{"allowed":"","definition":""},
+        "Number of lines of chemotherapy at time of blood draw":{"allowed":"","definition":""},
+        "Number of lines of anti-HER2 therapy at time of blood draw":{"allowed":"","definition":""},
+        "Number of lines of endocrine therapy at time of blood draw":{"allowed":"","definition":""},
+        "Overall Survival(months)":{"allowed":"","definition":""},
+        "Treatment Data":{"allowed":"","definition":""},
+        "Progression Free Survival(months)":{"allowed":"","definition":""},
+        "Gestational Age at Collection":{"allowed":"","definition":""},
+        "Fetus Sex":{"allowed":"","definition":""},
+        "Menopausal Status":{"allowed":"premenopause, perimenopause, menopause, postmenopause","definition":""},
+        "Blood Type":{"allowed":"","definition":""},
+        "RNA-Sequencing Available":{"allowed":"Yes, No","definition":""},
+        "ExPatientId":{"allowed":"","definition":""},
+        "Source":{"allowed":"AstraZeneca, Biomedica CRO Inc., DxBio, ATCC, Biometas, Menarini, Coriell, Precision for Medicine, BMS, Discovery Life Sciences, Rarecyte, Proteo, AMSBIO, UPMC, Indivumed GmbH, Research Blood Components, Garner Biosolutions Inc, Genentech, Genentech-UCSF, MD Anderson, MT Group, MGH Klempner, Other, OHSU, DFCI, UCSF, Turku, Duke, EMD Serono, Novartis, Tyra, Duke, MD Anderson, Menarini, AstraZeneca, EMD Serono","definition":"Vendor or Academic partner where samples were sourced from"},
+        "Country":{"allowed":"","definition":""},
+        "Gender":{"allowed":"Male, Female, Unknown","definition":""},
+        "Race":{"allowed":"American Indian or Alaska Native, Asian, Black or African American, Hispanic or Latino, Native Hawaiian or Other Pacific Islander, White","definition":""},
+        "MedicalHistory":{"allowed":"","definition":""},
+        "FamilyHistory":{"allowed":"","definition":""},
+        "AlcoholHistory":{"allowed":"","definition":""},
+        "SmokingHistory":{"allowed":"Current Smoker, Former Smoker, Never Smoked, not received, not applicable, Smoking History Present","definition":""},
+        "Number of years smoked or smoking":{"allowed":"","definition":""},
+        "Smoking Notes":{"allowed":"","definition":"Number of packs, ect."},
+        "Donor Notes":{"allowed":"","definition":"Any other info not captured above"}
+    }
 
     column_mapping = {}
     fixed_values = {}
@@ -92,8 +146,22 @@ with tab1:
     ]
 
     if all_column_options:
-        for field in template_fields:
+
+        mapped_fields = 0
+        total_fields = len(template_fields)
+
+        # Create placeholder for progress bar
+        st.sidebar.markdown("### 📝 Mapping Progress")
+        progress_bar = st.sidebar.progress(0)
+
+        for field,meta in template_fields.items():
             st.markdown(f"### {field}")
+
+            if meta["definition"]:
+                st.caption(f"📘 {meta['definition']}")
+
+            if meta["allowed"]:
+                st.markdown(f"**Allowed values**: `{meta['allowed']}`")
 
             use_not_received = st.checkbox(f"Mark '{field}' as Not Received", key=f"not_received_{field}")
             use_fixed_value = st.checkbox(f"Fill '{field}' with a constant value", key=f"use_fixed_value_{field}")
@@ -123,6 +191,14 @@ with tab1:
                     options=[""] + all_column_options,
                     key=f"map_{field}"
                 )
+
+            mapped_val = column_mapping.get(field)
+            if mapped_val not in ["", None]:
+                mapped_fields += 1
+
+            progress_pct = int((mapped_fields / total_fields) * 100)
+            progress_bar.progress(progress_pct)
+
     else:
         st.info("Please upload and configure the raw file and/or shipping manifest to proceed with mapping.")
 
@@ -219,7 +295,10 @@ with tab2:
     "Single/Double Spun": ("single_double_mappings", "standard_value"),
     "Sample Timepoints": ("sample_timepoint_mappings", "standard_value"),
     "Stage": ("stage_mappings", "standard_value"),
-    "Hemolysis": ("hemolysis_mappings", "standard_value")
+    "Hemolysis": ("hemolysis_mappings", "standard_value"),
+    "Diagnostics": ("diagnostic_mappings", "standard_value"),
+    "Race": ("race_mappings", "standard_value"),
+    "Smoking History": ("smoking_history_mappings", "standard_value")
     }
 
 
@@ -231,9 +310,25 @@ with tab2:
     mapping_df = mapping_df.drop(columns=["id"])
     st.dataframe(mapping_df)
 
-    st.markdown("### ➕ Add a new synonym")
+    st.markdown("### Add a new synonym")
 
-    new_standard = st.text_input("Standard value")
+    # Fetch existing standard values from the DB
+    existing_standards_df = pd.read_sql(f"SELECT DISTINCT {standard_col} FROM {table_name}", conn)
+    standard_options = sorted(existing_standards_df[standard_col].dropna().unique().tolist())
+
+    # Add an extra option to create a new one
+    standard_options.append("➕ Create new...")
+
+    # Dropdown with extra option
+    selected_option = st.selectbox("Select or create a standard value", options=standard_options)
+
+    # If they choose "create new", show a text input
+    if selected_option == "➕ Create new...":
+        new_standard = st.text_input("Enter new standard value")
+    else:
+        new_standard = selected_option
+
+
     new_synonym = st.text_input("Synonym value")
 
     if st.button("Add Synonym"):

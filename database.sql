@@ -1,69 +1,87 @@
 CREATE DATABASE IF NOT EXISTS mappings_db;
 USE mappings_db;
 
-CREATE TABLE biomarker_mappings(
+CREATE TABLE IF NOT EXISTS biomarker_mappings(
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_name VARCHAR(255) NOT NULL,
     synonym VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE pos_neg_mappings (
+CREATE TABLE IF NOT EXISTS pos_neg_mappings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_value VARCHAR(255),
     synonym VARCHAR(255)
 );
 
-CREATE TABLE her2_ihc_mappings (
+CREATE TABLE IF NOT EXISTS her2_ihc_mappings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_value VARCHAR(255),
     synonym VARCHAR(255)
 );
 
-CREATE TABLE menopause_mappings (
+CREATE TABLE IF NOT EXISTS menopause_mappings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_term VARCHAR(255),
     synonym VARCHAR(255)
 );
 
-CREATE TABLE stabilizer_mappings (
+CREATE TABLE IF NOT EXISTS stabilizer_mappings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_value VARCHAR(255),
     synonym VARCHAR(255)
 );
 
-CREATE TABLE gender_mappings (
+CREATE TABLE IF NOT EXISTS gender_mappings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_value VARCHAR(255),
     synonym VARCHAR(255)
 );
 
-CREATE TABLE single_double_mappings (
+CREATE TABLE IF NOT EXISTS single_double_mappings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_value VARCHAR(255),
     synonym VARCHAR(255)
 );
 
-CREATE TABLE sample_timepoint_mappings (
+CREATE TABLE IF NOT EXISTS sample_timepoint_mappings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_value VARCHAR(255),
     synonym VARCHAR(255)
 );
 
-CREATE TABLE stage_mappings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    standard_value VARCHAR(255),
-    synonym VARCHAR(255)
-);
-
-
-
-CREATE TABLE hemolysis_mappings (
+CREATE TABLE IF NOT EXISTS stage_mappings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     standard_value VARCHAR(255),
     synonym VARCHAR(255)
 );
 
 
+
+CREATE TABLE IF NOT EXISTS hemolysis_mappings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    standard_value VARCHAR(255),
+    synonym VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS diagnostic_mappings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    standard_value VARCHAR(255),
+    synonym VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS race_mappings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    standard_value VARCHAR(255),
+    synonym VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS smoking_history_mappings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    standard_value VARCHAR(255),
+    synonym VARCHAR(255)
+);
+
+/*
 INSERT INTO biomarker_mappings (standard_name, synonym) VALUES
 ('HER2', 'her2'),
 ('ER', 'er'),
@@ -190,5 +208,5 @@ INSERT INTO hemolysis_mappings (standard_value, synonym) VALUES
 ('light hemolysis', 'Light Hemolysis'),
 ('hemolysis', ' Hemolysis'),
 ('strong hemolysis', 'Strong Hemolysis');
-
+*/
 

@@ -350,7 +350,7 @@ with tab2:
     st.dataframe(mapping_df)
 
     st.markdown("### Add a new synonym")
-    st.markdown("Don't refresh the the page after adding a synonym, as it will reset the mapping progress (even if you don't see it in the UI after adding, it will be added to the database).")
+    st.markdown("Don't refresh the the page after adding a synonym, it will reset the mapping progress (even if you don't see it in the UI after adding, it will be added to the database).")
 
     existing_standards_df = pd.read_sql(f"SELECT DISTINCT {standard_col} FROM {table_name}", conn)
     standard_options = sorted(existing_standards_df[standard_col].dropna().unique().tolist())
@@ -378,3 +378,17 @@ with tab2:
             st.success("Synonym added ✅")
         else:
             st.warning("Please fill out both fields to add a new synonym.")
+    st.markdown("### Delete a synonym")
+    delete_synonym= st.selectbox("Enter the synonym to delete", options=[""]+mapping_df["synonym"].tolist(), key="delete_synonym")
+
+    if st.button("Delete Synonym"):
+        if delete_synonym:
+            cursor= conn.cursor()
+            cursor.execute(
+                f"DELETE FROM {table_name} WHERE synonym = %s",
+                (delete_synonym.strip(),)
+            )
+            conn.commit()
+            st.success("Synonym deleted ✅")
+        else:
+            st.warning("Please enter a synonym to delete.") 

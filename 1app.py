@@ -47,6 +47,14 @@ with tab1:
         except Exception as e:
             st.sidebar.warning(f"Could not preview shipping manifest: {e}")
 
+    if raw_preview is not None and shipping_preview is not None:
+        st.subheader("Merge Raw and Shipping Files")
+        raw_col_merge = st.selectbox("Select column to merge raw file on:", options=[""] + raw_preview.columns.tolist(), key="raw_col_merge")
+        ship_col_merge = st.selectbox("Select column to merge shipping manifest on:", options=[""] + shipping_preview.columns.tolist(), key="ship_col_merge")
+    else:
+        raw_col_merge= ship_col_merge = None
+
+
     st.markdown("<hr style='border: 1.5px solid black;'>", unsafe_allow_html=True)
 
     # Guided Column Mapping
@@ -180,7 +188,7 @@ with tab1:
                 column_mapping[field] = "not received"
 
             elif use_fixed_value:
-                fixed_val = st.text_input(f"Enter constant value for '{field}':", key=f"fixed_value_{field}")
+                fixed_val = st.text_input(f"Enter the value you want to fill the '{field}' column with:", key=f"fixed_value_{field}")
                 if fixed_val:
                     fixed_values[field] = fixed_val
                     column_mapping[field] = "fixed"
@@ -255,14 +263,12 @@ with tab1:
         raw = pd.read_excel(raw_file, sheet_name=sheet_name_raw, header=raw_header)
         template = pd.read_excel(template_file, header=1)
         shipping = pd.read_excel(shipping_file, sheet_name=sheet_name_shipping, header=shipping_header) if shipping_file else pd.DataFrame()
+        
 
         final_df = process_raw_to_template(
             template=template,
             raw=raw,
             shipping_manifest=shipping,
-            dataset=dataset,
-            transformer="",
-            transform_date="",
             column_mapping=column_mapping,
             fixed_values=fixed_values,
             biomarker_cols=[],
@@ -274,8 +280,9 @@ with tab1:
             menopause_mapping=menopause_mapping,
             transformations=transformations,
             height_truth=height_truth,
-            weight_truth=weight_truth
-
+            weight_truth=weight_truth,
+            raw_col_merge=raw_col_merge,
+            ship_col_merge=ship_col_merge
         )
         
 

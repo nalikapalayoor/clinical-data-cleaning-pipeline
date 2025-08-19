@@ -1,3 +1,4 @@
+from typing import final
 import streamlit as st
 import pandas as pd
 import re
@@ -195,7 +196,29 @@ def call_calculation_functions(final_df, raw_df, mapping_dict):
         )
     return final_df
 
-def process_raw_to_template(template, raw, shipping_manifest, dataset, transformer, transform_date, column_mapping, fixed_values, biomarker_cols, calculation_functions, biomarker_mapping, pos_neg_mapping, her2_ihc_mapping, menopause_mapping, extract_menopause_from_biomarker=True, transformations=None):
+def height_weight_conversion(height_truth, weight_truth):
+    if height_truth== "cm":
+        height_conversion = 1
+    elif height_truth == "inches":
+        height_conversion = 2.54
+    elif height_truth == "meters":
+        height_conversion = 100
+    else:
+        height_conversion = 1
+
+    if weight_truth == "kg":
+        weight_conversion = 1
+    elif weight_truth == "lbs":
+        weight_conversion = 0.453592
+    else:
+        weight_conversion = 1
+
+    weight= lambda x: x * weight_conversion if pd.notna(x) else pd.NA
+    height = lambda x: x * height_conversion if pd.notna(x) else pd.NA
+
+    return weight, height
+
+def process_raw_to_template(template, raw, shipping_manifest, dataset, transformer, transform_date, column_mapping, fixed_values, biomarker_cols, calculation_functions, biomarker_mapping, pos_neg_mapping, her2_ihc_mapping, menopause_mapping, extract_menopause_from_biomarker=True, transformations=None, height_truth="cm", weight_truth="kg"):
     final = pd.DataFrame(index=raw.index, columns=template.columns)
     raw['biomarker_blob'] = raw[biomarker_cols].astype(str).replace('nan', '').agg(' '.join, axis=1).str.replace(r'\s+', ' ', regex=True).str.strip()
     #raw = pd.merge(raw, shipping_manifest, left_on='Patient ID\nconsecutive', right_on='Patient ID consecutive', how="left")
@@ -221,8 +244,21 @@ def process_raw_to_template(template, raw, shipping_manifest, dataset, transform
 
     special_fields = {"AgeAtCollection"}
     
-    weight_col = column_mapping.get("Weight")
     height_col = column_mapping.get("Height")
+    weight_col = column_mapping.get("Weight")
+
+
+    convert_weight, convert_height = height_weight_conversion(height_truth, weight_truth)
+
+    if height_col in raw.columns:
+        raw[height_col] = raw[height_col].apply(convert_height)
+
+    if weight_col in raw.columns:
+        raw[weight_col] = raw[weight_col].apply(convert_weight)
+
+    final["Height"] = raw[height_col] if height_col in raw.columns else pd.NA
+    final["Weight"] = raw[weight_col] if weight_col in raw.columns else pd.NA
+
 
     if weight_col in raw.columns and height_col in raw.columns:
         final["BMI"] = raw.apply(
@@ -230,6 +266,8 @@ def process_raw_to_template(template, raw, shipping_manifest, dataset, transform
         )
     else:
         final["BMI"] = pd.NA
+
+    
 
     
     for col, val in fixed_values.items():

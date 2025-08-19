@@ -147,6 +147,7 @@ with tab1:
 
     if all_column_options:
 
+
         mapped_fields = 0
         total_fields = len(template_fields)
 
@@ -163,6 +164,13 @@ with tab1:
 
             if meta["allowed"]:
                 st.markdown(f"**Allowed values**: `{meta['allowed']}`")
+
+            if field == "Height":
+                height_truth = st.radio("What unit is height in the raw data?", ["cm", "inches", "meters"], index=0, horizontal=True, key="unit_height")
+            if field == "Weight":
+                weight_truth = st.radio("What unit is weight in the raw data?", ["kg", "lbs"], index=0, horizontal=True, key="unit_weight")
+
+
 
             use_not_received = st.checkbox(f"Mark '{field}' as Not Received", key=f"not_received_{field}")
             use_fixed_value = st.checkbox(f"Fill '{field}' with a constant value", key=f"use_fixed_value_{field}")
@@ -217,7 +225,6 @@ with tab1:
     extract_menopause_from_biomarker = st.checkbox(
         "Extract Menopausal Status from Biomarker Columns?", value=True
     )
-
     import mysql.connector
     from harmonization import load_mapping
 
@@ -265,7 +272,9 @@ with tab1:
             pos_neg_mapping=pos_neg_mapping,
             her2_ihc_mapping=her2_ihc_mapping,
             menopause_mapping=menopause_mapping,
-            transformations=transformations
+            transformations=transformations,
+            height_truth=height_truth,
+            weight_truth=weight_truth
 
         )
         

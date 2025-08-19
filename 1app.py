@@ -334,6 +334,7 @@ with tab2:
     st.dataframe(mapping_df)
 
     st.markdown("### Add a new synonym")
+    st.markdown("Don't refresh the the page after adding a synonym, as it will reset the mapping progress (even if you don't see it in the UI after adding, it will be added to the database).")
 
     existing_standards_df = pd.read_sql(f"SELECT DISTINCT {standard_col} FROM {table_name}", conn)
     standard_options = sorted(existing_standards_df[standard_col].dropna().unique().tolist())
